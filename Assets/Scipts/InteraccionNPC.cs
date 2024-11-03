@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class InteraccionNPC : MonoBehaviour
 {
-    public Transform Jugador; // Referencia al transform del jugador
+    public Transform jugador; // Referencia al transform del jugador
     public float distanciaInteraccion = 1.5f; // Distancia de interacción para activar
     public float velocidadRotacion = 100f; // Velocidad de rotación durante la interacción
     public float distanciaDetrasX = -1f; // Distancia fija detrás del jugador en el eje X
+    public float tiempoInteraccionNPC = 3f; // Tiempo de interacción del NPC
     private bool estaInteraccionando = false; // Controla el estado de interacción
     private bool seguirDetrasDelJugador = false; // Controla si el NPC debe estar detrás del jugador
     private bool interaccionRealizada = false; // Controla si la interacción ya se realizó
@@ -18,20 +19,21 @@ public class InteraccionNPC : MonoBehaviour
     private void Start()
     {
         // Obtiene el componente MovimientoJugador del jugador
-        movimientoJugador = Jugador.GetComponent<MovimientoJugador>();
+        movimientoJugador = jugador.GetComponent<MovimientoJugador>();
     }
 
     private void Update()
     {
         // Verificar la distancia entre el jugador y el NPC
-        float distancia = Vector2.Distance(transform.position, Jugador.position);
+        float distancia = Vector2.Distance(transform.position, jugador.position);
         
         // Activar la interacción si está dentro de la distancia y no se ha realizado
         if (distancia <= distanciaInteraccion && !estaInteraccionando && !interaccionRealizada && !Input.GetKey(KeyCode.RightArrow))
         {
             estaInteraccionando = true; // Inicia la interacción
             interaccionRealizada = true; // Marca la interacción como realizada
-            movimientoJugador.DeshabilitarMovimiento(3f); // Deshabilita el movimiento del jugador por 3 segundos
+            movimientoJugador.DeshabilitarMovimiento(tiempoInteraccionNPC); // Deshabilita el movimiento del jugador por el tiempo de interacción
+            InteraccionObstaculo.IncrementarNPCContador(); // Incrementa el contador de NPCs de forma estática
             tiempoInteraccion = 0f; // Reinicia el temporizador de interacción
         }
 
@@ -42,7 +44,7 @@ public class InteraccionNPC : MonoBehaviour
             tiempoInteraccion += Time.deltaTime; // Aumenta el tiempo de interacción
 
             // Termina la interacción después de 3 segundos
-            if (tiempoInteraccion >= 3f)
+            if (tiempoInteraccion >= tiempoInteraccionNPC)
             {
                 estaInteraccionando = false; // Termina la interacción
                 movimientoJugador.EstablecerInteraccion(false); // Permite que el jugador se mueva de nuevo
@@ -83,9 +85,15 @@ public class InteraccionNPC : MonoBehaviour
     private void PosicionInstantaneaDetrasDelJugador()
     {
         // Coloca instantáneamente al NPC a una distancia fija en X detrás del jugador, y al mismo nivel en Y
-        transform.position = new Vector3(Jugador.position.x + distanciaDetrasX, Jugador.position.y, transform.position.z);
+        transform.position = new Vector3(jugador.position.x + distanciaDetrasX, jugador.position.y, transform.position.z);
     }
 }
+
+
+
+
+
+
 
 
 
