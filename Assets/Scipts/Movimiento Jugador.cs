@@ -10,20 +10,22 @@ public class MovimientoJugador : MonoBehaviour
 
     private float tiempoPresionado = 0f; // Tiempo que se ha mantenido presionada la tecla
     private float velocidadActual; // Velocidad actual del jugador
-    private bool puedeMoverse = true; // Controlar si el jugador puede moverse
-    private bool estaInteraccionando = false; // Controlar el estado de interacción
+    private bool puedeMoverse = true; // Controla si el jugador puede moverse
+    private bool estaInteraccionando = false; // Controla el estado de interacción
+
+    private Animator animator; // Referencia al Animator
 
     void Start()
     {
-        velocidadActual = velocidad; // Configurar la velocidad inicial
+        velocidadActual = velocidad; // Configura la velocidad inicial
+        animator = GetComponent<Animator>(); // Obtiene el componente Animator
     }
 
     void Update()
     {
-        // Verifica si se puede mover
-        if (puedeMoverse && Input.GetKey(KeyCode.RightArrow))
+        // Verifica si el jugador puede moverse
+        if (puedeMoverse && !estaInteraccionando && Input.GetKey(KeyCode.RightArrow))
         {
-            // Incrementa el tiempo que la tecla ha estado presionada
             tiempoPresionado += Time.deltaTime;
 
             // Si se ha presionado por más de 3 segundos, aplica la velocidad acelerada
@@ -32,8 +34,11 @@ public class MovimientoJugador : MonoBehaviour
                 velocidadActual = velocidadAcelerada;
             }
 
-            // Mueve el cuadrado hacia la derecha con la velocidad actual
+            // Mueve al jugador hacia la derecha con la velocidad actual
             transform.Translate(Vector2.right * velocidadActual * Time.deltaTime);
+
+            // Configura el parámetro "Velocidad" para activar la animación de correr
+            animator.SetFloat("Velocidad", velocidadActual);
         }
         else
         {
@@ -41,15 +46,12 @@ public class MovimientoJugador : MonoBehaviour
             tiempoPresionado = 0f;
             velocidadActual = velocidad;
 
-            // Verifica si está cerca del NPC y no se está moviendo
-            if (estaInteraccionando)
-            {
-                DeshabilitarMovimiento(tiempoInmovilizacion); // Deshabilita el movimiento
-            }
+            // Configura el parámetro "Velocidad" en 0 para activar la animación de idle
+            animator.SetFloat("Velocidad", 0);
         }
     }
 
-    // Método público para deshabilitar el movimiento del jugador
+    // Método público para deshabilitar el movimiento del jugador temporalmente
     public void DeshabilitarMovimiento(float duracion)
     {
         StartCoroutine(DeshabilitarMovimientoCoroutine(duracion));
@@ -58,6 +60,7 @@ public class MovimientoJugador : MonoBehaviour
     private System.Collections.IEnumerator DeshabilitarMovimientoCoroutine(float duracion)
     {
         puedeMoverse = false; // Deshabilita el movimiento
+        animator.SetFloat("Velocidad", 0); // Cambia a animación Idle
         yield return new WaitForSeconds(duracion); // Espera el tiempo especificado
         puedeMoverse = true; // Habilita el movimiento de nuevo
     }
@@ -66,8 +69,11 @@ public class MovimientoJugador : MonoBehaviour
     public void EstablecerInteraccion(bool estado)
     {
         estaInteraccionando = estado; // Cambia el estado de interacción
+        if (!estado) puedeMoverse = true; // Permite el movimiento si no está interactuando
     }
 }
+
+
 
 
 
